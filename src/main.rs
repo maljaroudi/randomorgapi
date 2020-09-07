@@ -40,11 +40,11 @@ fn main() {
     };
 
     let value = call_random(api_values, url);
-     println!("{}",value)
+     println!("{}",value.unwrap())
 
 }
 
-fn call_random(api_vals: GenerateIntegers, url: String) -> String {
+fn call_random(api_vals: GenerateIntegers, url: String) -> Result<String,ureq::Error> {
     let data = json!({
         "jsonrpc": "2.0",
         "method": "generateIntegers",
@@ -56,11 +56,9 @@ fn call_random(api_vals: GenerateIntegers, url: String) -> String {
         "max": api_vals.max
         }
     });
-    let result= ureq::post(&url).send_json(data).into_string().unwrap();
-    let start_bytes = result.find(r#""data":"#).unwrap_or(0);
-    let end_bytes = result.find(r#","completionTime""#).unwrap_or(result.len());
-    let resultf = &result[start_bytes+7..end_bytes];
-    resultf.to_owned()
+    let result= ureq::post(&url).send_json(data).into_json()?;
+    Ok(result["result"]["random"]["data"].to_string())
+   
 }
 
 
